@@ -62,20 +62,14 @@ public class MyDispatcherServlet extends HttpServlet {
     public void init(ServletConfig config){
 
         try {
-            logger.info(config.getInitParameter(LOCATION));
             //1、加载配置文件：通过ServletConfig参数可以获取web.xml里关于DispatcherServlet的配置信息
             doLoadConfig(config.getInitParameter(LOCATION));
-            logger.info("load config success");
-
             //2、扫描指定包的所有类到classNames中
-            doScannerCreateName(p.getProperty("scanPackage"));
-            logger.info("ScannerCreateClass success");
+            doScanner(p.getProperty("scanPackage"));
             //3、初始化所有实例到IOC容器中，并完成依赖注入和AOP切入：交给beanFactory完成
             BeanFactory.initBean(classList);
-            logger.info("initBean success");
             //4、保存url和方法的映射关系
             HandlerManager.resolveMappingHandler(classList);
-            logger.info("resolveMappingHandler success");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -90,6 +84,8 @@ public class MyDispatcherServlet extends HttpServlet {
     * */
     private void doLoadConfig(String location){
         InputStream fis = null;
+        //读取到的文件位置为：classpath:application.properties，需要提取出application.properties
+        location = location.substring(location.indexOf(":") + 1);
         try {
             fis = this.getClass().getClassLoader().getResourceAsStream(location);
             p.load(fis);
@@ -108,10 +104,9 @@ public class MyDispatcherServlet extends HttpServlet {
     }
 
     /*
-    * 递归扫描指定包下的所有类，将全限定类名保存到classNames中
-    * debug:功能正常
+    * 递归扫描指定包下的所有类，通过反射获取全限定类名的class对象，保存到classList中
     * */
-    private void doScannerCreateName(String packageName){
+    private void doScanner(String packageName){
         //将所有的包路径转换为文件路径:因为是从输出的文件夹里读取的
         String path = "/" + packageName.replaceAll("\\.", "/");
         URL url = this.getClass().getClassLoader().getResource(path);
@@ -119,63 +114,19 @@ public class MyDispatcherServlet extends HttpServlet {
         for(File file : dir.listFiles()){
             //如果是文件夹，继续递归
             if(file.isDirectory()){
-                doScannerCreateName(packageName + "." + file.getName());
+                doScanner(packageName + "." + file.getName());
             } else{
-                //加入classNames的类名为：全限定类名
-                //classNames.add(packageName + "." + file.getName().replaceAll(".class", "").trim());
+                //根据.class文件构造对应的全限定类名
+                //例如：packageName=com.wu.demo，文件名为：UserAop.class，className=com.wu.demo.UserAop
                 String className = packageName + "." + file.getName().replaceAll(".class", "").trim();
                 try {
+                    //通过全限定类名获取它的Class对象，存入classList
                     classList.add(Class.forName(className));
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
             }
         }
-    }
-
-    /*
-     * 递归扫描指定包下的所有类，将类的Class对象保存到classNames中
-     * */
-    private void doScannerCreateClass(String packageName) throws IOException, ClassNotFoundException {
-        //List<Class<?>> classList = new ArrayList<>();
-        String path = packageName.replace(".", "/");
-        // 线程上下文类加载器默认是应用类加载器，即 ClassLoader.getSystemClassLoader();
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-
-        // 使用类加载器对象的 getResources(ResourceName) 方法获取资源集
-        Enumeration<URL> resources = classLoader.getResources(path);
-        while (resources.hasMoreElements()) {
-            URL url = resources.nextElement();
-            // 获取协议类型，判断是否为 jar 包
-            if (url.getProtocol().contains("jar")) {
-                // 将打开的 url 返回的 URLConnection 转换成其子类 JarURLConnection 包连接
-                JarURLConnection jarURLConnection = (JarURLConnection) url.openConnection();
-                String jarFilePath = jarURLConnection.getJarFile().getName();
-                classList.addAll(getClassesFromJar(jarFilePath, path));
-            } else {
-                // 简单起见，我们暂时仅实现扫描 jar 包中的类
-                // todo
-            }
-        }
-        //return classList;
-    }
-
-    private static List<Class<?>> getClassesFromJar(String jarFilePath, String path) throws IOException, ClassNotFoundException {
-        List<Class<?>> classes = new ArrayList<>();
-        JarFile jarFile = new JarFile(jarFilePath);
-        Enumeration<JarEntry> jarEntrys = jarFile.entries();
-        while (jarEntrys.hasMoreElements()) {
-            JarEntry jarEntry = jarEntrys.nextElement();
-            // com/caozhihu/spring/test/Test.class
-            String entryName = jarEntry.getName();
-            if (entryName.startsWith(path) && entryName.endsWith(".class")) {
-                // 全限定类名
-                String classFullName = entryName.replace("/", ".").substring(0, entryName.length() - 6);
-                // 使用类的全限定类名初始化类，并将类对象保存
-                classes.add(Class.forName(classFullName));
-            }
-        }
-        return classes;
     }
 
 

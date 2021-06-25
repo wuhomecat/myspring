@@ -1,4 +1,4 @@
-package com.wu.demo.controller;
+package com.wu.demo;
 
 import com.wu.annotation.aop.MyAfter;
 import com.wu.annotation.aop.MyAspect;
@@ -10,7 +10,7 @@ import com.wu.annotation.ioc.MyComponent;
 @MyComponent
 public class UserAop {
 
-    @MyPointcut("com.wu.demo.controller.UserServiceImpl.findAll()")
+    @MyPointcut("com.wu.demo.UserServiceImpl.findAll()")
     public void mypointcut(){
 
     }

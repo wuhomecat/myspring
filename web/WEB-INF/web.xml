@@ -8,9 +8,9 @@
         <servlet-name>springmvc</servlet-name>
         <servlet-class>com.wu.servlet.MyDispatcherServlet</servlet-class>
         <init-param>
-            <!-- 绑定springmvc-servlet配置文件 -->
+            <!-- 绑定application.properites配置文件 -->
             <param-name>contextConfigLocation</param-name>
-            <param-value>application.properties</param-value>
+            <param-value>classpath:application.properties</param-value>
         </init-param>
         <!-- 启动级别：1=随服务器一起启动 -->
         <load-on-startup>1</load-on-startup>

@@ -45,6 +45,8 @@ public class BeanFactory {
         // 保存被 @Aspect 注解的切面类
         List<Class<?>> aspectClasses = new ArrayList<>();
 
+        //1、遍历扫描到的所有类
+        //2、对标注了@Autowired的属性做依赖注入（createBean()中）
         for (Class<?> clazz : classesToCreate) {
             if (clazz.isAnnotationPresent(MyAspect.class)) {
                 aspectClasses.add(clazz);
@@ -52,10 +54,10 @@ public class BeanFactory {
                 createBean(clazz);
             }
         }
-        // 使用动态代理处理AOP
+        // 3、使用动态代理处理AOP
         resolveAOP(aspectClasses);
 
-        // 标注@Autowired的属性在上面的createBean已经注入过了，但在引入aop后可能有的属性发生了更新，需要重新注入
+        // 4、标注@Autowired的属性在上面的createBean已经注入过了，但在引入aop后可能有的属性发生了更新，需要重新注入
         for (Class<?> clazz : beansHasAutoWiredField) {
             createBean(clazz);
         }

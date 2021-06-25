@@ -1,4 +1,4 @@
-package com.wu.demo.controller;
+package com.wu.demo;
 
 public interface UserService {
     public void findAll();

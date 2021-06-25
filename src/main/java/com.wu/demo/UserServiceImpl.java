@@ -1,4 +1,4 @@
-package com.wu.demo.controller;
+package com.wu.demo;
 
 import com.wu.annotation.ioc.MyService;
 
