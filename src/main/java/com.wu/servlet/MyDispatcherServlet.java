@@ -34,16 +34,8 @@ public class MyDispatcherServlet extends HttpServlet {
     private static final String LOCATION = "contextConfigLocation";
     //保存所有的配置信息
     private Properties p = new Properties();
-    //保存所有被扫描到的类名
-    private List<String> classNames = new ArrayList<>();
+    //保存所有被扫描到的类
     private List<Class<?>> classList = new ArrayList<>();
-    //核心IOC容器，保存所有初始化的bean
-    private Map<Class<?>, Object> ioc = new HashMap<>();
-    //保存所有ulr和方法的映射关系
-    private Map<String, Method> handlerMapping = new HashMap<>();
-
-    //bean工厂，用于将所有注解标注的类初始化到IOC容器中
-    BeanFactory beanFactory = new BeanFactory();
 
 
     public MyDispatcherServlet(){
@@ -90,7 +82,6 @@ public class MyDispatcherServlet extends HttpServlet {
             fis = this.getClass().getClassLoader().getResourceAsStream(location);
             p.load(fis);
         } catch (Exception e) {
-            System.out.println("找不到文件");
             e.printStackTrace();
         } finally {
             if(null != fis) {
@@ -141,11 +132,10 @@ public class MyDispatcherServlet extends HttpServlet {
                     return;
                 }
             } catch (IllegalAccessException | InvocationTargetException e) {
-                logger.info("执行方法出错");
                 e.printStackTrace();
             }
         }
-        resp.getWriter().println("failed!");
+        resp.getWriter().println("404 not found!");
 
     }
 

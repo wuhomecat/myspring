@@ -6,7 +6,7 @@ import com.wu.annotation.mvc.MyRequestMapping;
 
 @MyController
 @MyRequestMapping("/user")
-public class UserControllerImpl {
+public class UserController {
     @MyAutoWired
     private UserService userService;
 
